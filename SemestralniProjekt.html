@@ -1,0 +1,1329 @@
+<HTML>
+<STYLE TYPE="TEXT/CSS">
+TABLE.UML {
+	BORDER-WIDTH: 1PX 1PX 1PX 1PX;
+	BORDER-SPACING: 0PX;
+	BORDER-STYLE: SOLID SOLID SOLID SOLID;
+	BORDER-COLOR: BLACK BLACK BLACK BLACK;
+	BORDER-COLLAPSE: SEPARATE;
+	BACKGROUND-COLOR: WHITE;
+}
+
+CODE {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 80%;
+}
+
+PRE {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 80%;
+}
+
+H1 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 144%;
+	FONT-STYLE: BOLD;
+}
+
+H2 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 120%;
+	FONT-STYLE: BOLD;
+}
+
+H3 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 100%;
+	FONT-STYLE: BOLD;
+}
+
+</STYLE>
+<HEAD>
+<TITLE>
+Semestralni projekt - Let letadlem</TITLE>
+</HEAD>
+<BODY>
+<H1>Semestralni projekt - Let letadlem</H1>
+<B>author&#40;s&#41;: </B>Martin Dub
+<BR>
+<P>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;__|__&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;__|__&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<BR>
+--@--@--&#40;_&#41;--@--@--&#160;&#160;&#160;--@--@--&#40;_&#41;--@--@--<BR>
+<BR>
+Tento projekt se zabyva kompletnim zpracovanim dat potrebnym k provedeni jednoho letu.<BR>
+Zpracovano: <BR>
+&#160;&#160;&#160;&#8226; Pilot<BR>
+&#160;&#160;&#160;&#8226; Pasazer<BR>
+&#160;&#160;&#160;&#8226; Letadlo<BR>
+&#160;&#160;&#160;&#8226; Letiste<BR>
+&#160;&#160;&#160;&#8226; Letenka<BR>
+&#160;&#160;&#160;&#8226; Let<BR>
+<BR>
+<BR>
+Tyto tridy se plni informacemi ze setu:<BR>
+&#160;&#160;&#160;&#8226; Piloti<BR>
+&#160;&#160;&#160;&#8226; Pasazeri<BR>
+&#160;&#160;&#160;&#8226; Letadla<BR>
+&#160;&#160;&#160;&#8226; Letiste<BR>
+&#160;&#160;&#160;&#8226; Sedadlo<BR>
+<BR>
+Metody:<BR>
+&#160;&#160;&#160;&#8226; vek - pocita aktualni vek pasazera&#44; hlida mladistve a dospele osoby<BR>
+&#160;&#160;&#160;&#8226; hodnost - z pole hodnosti vybira aktuali pozici pilota v letadle<BR>
+&#160;&#160;&#160;&#8226; licenceDo - hlida platnost licence pilota&#44; vzdy na 5 let<BR>
+&#160;&#160;&#160;&#8226; cisloSedadla - propojuje vazbu Pasazer &#40;cisloLetenky&#41; -&gt; Letadlo &#40;cisloSedadla&#41;<BR>
+&#160;&#160;&#160;&#8226; gate - nahodne prirazuje letadlu gate&#44; kde se budou shlukovat pasazeri<BR>
+&#160;&#160;&#160;&#8226; runway - vzletova/pristavaci runway&#44; prirazena kazdemu letisti podle Dictionary<BR>
+&#160;&#160;&#160;&#8226; mapovaniTypuLetadelNaPocetSedadel - Dictionary na kapacitu kazdeho typu letadla<BR>
+&#160;&#160;&#160;&#8226; naletanoHodin - prumerny pocet naletanych hodin daneho stroje&#44; odviji se od roku vyroby<BR>
+&#160;&#160;&#160;&#8226; naplneno - vraci procentualni plnost letadla<BR>
+&#160;&#160;&#160;&#8226; priraditSedadlo - stezejni metoda&#44; popsana v komentarich<BR>
+&#160;&#160;&#160;&#8226; rozlozeniSedadel - matice sedacek v letadle&#44; podle tohoto schematu se prirazuji cisla sedadel pasazerum<BR>
+&#160;&#160;&#160;&#8226; souradniceMest - matice souradnic mest a jejich letist<BR>
+&#160;&#160;&#160;&#8226; vzdalenostMeziMesty - Pouziva Haversine formula na vypocet vzdalenosti mezi mesty vzhledem k zemepisne sirce a delce<BR>
+<BR>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;__|__&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;__|__&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<BR>
+--@--@--&#40;_&#41;--@--@--&#160;&#160;&#160;--@--@--&#40;_&#41;--@--@--<BR>
+<BR>
+
+</P>
+
+<BR>
+<HR>
+<H2>Workspace</H2>
+<PRE>&quot;Vsichni zletili pasazeri&quot;
+&#40;Pasazeri select:[:pasazer | pasazer vek &gt; 18]&#41;.
+
+&quot;Pilot s cislem licence 19300&quot;
+&#40;Piloti select:[:pilot | pilot cisloLicence = 19300]&#41;
+
+&quot;Letadla&#44; ktera poleti &#40;Letadla naplnena na mene nez 5 procent nevzletnou&#41;&quot;
+&#40;Letadla reject:[:letadlo | letadlo naplnenoZProcent &lt; 5]&#41;.
+
+&quot;Vyhleda letiste s kodem PRG&quot;
+&#40;SeznamLetist select:[:r | r kodIATA = &#35;PRG]&#41;.
+
+&quot;Sbira data o nezletilych pasazerech a zobrazuje cislo jejich sedadla&quot;
+&#40;Pasazeri select: [:r | r vek &lt; 18]&#41; collect: [:r | r jmeno] with: [:r | r zakoupenaLetenka cisloSedadla].
+
+&quot;Veskere detaily letadla Air France&quot;
+&#40;Letadla select: [:letadlo | letadlo vlastnik = &#39;Air France&#39;]&#41; collect: [:letadlo | letadlo posadka] with: [:letadlo | letadlo pristiServis] with: [:letadlo | &#40;letadlo let&#41; pristavaNaRunway] with: [:letadlo | &#40;letadlo let&#41; vzdalenostMeziStartemACilem].</PRE>
+<H4>Workspace Objects</H4>
+<UL>
+
+<BR>
+<LI>
+<CODE>
+Letadla :Set
+</CODE>
+<LI>
+<CODE>
+Lety :Set
+</CODE>
+<LI>
+<CODE>
+Pasazeri :Set
+</CODE>
+<LI>
+<CODE>
+Piloti :OrderedCollection
+</CODE>
+<LI>
+<CODE>
+SeznamLetist :OrderedCollection
+</CODE>
+</UL>
+
+<BR>
+<HR>
+<H2>Script</H2>
+<PRE>&quot;Set&quot;
+Pasazeri := Set new.
+Piloti := OrderedCollection new.
+Letadla := Set new.
+SeznamLetist := OrderedCollection new.
+Lety:= Set new.
+
+&quot;Pasazeri&quot;
+
+pasazer1 := Pasazer jmeno: &#39;Martin&#39; prijmeni: &#39;Dub&#39; datumNarozeni: &#40;Date newDay: 11 monthNumber: 10 year: 1998&#41; cisloDokladuTotoznosti: &#39;201245673&#39;.
+pasazer2 := Pasazer jmeno: &#39;Martin&#39; prijmeni: &#39;Oak&#39; datumNarozeni: &#40;Date newDay: 4 monthNumber: 5 year: 1987&#41; cisloDokladuTotoznosti: &#39;201244564&#39;.
+pasazer3 := Pasazer jmeno: &#39;Lorem&#39; prijmeni: &#39;Ipsum&#39; datumNarozeni: &#40;Date newDay: 1 monthNumber: 1 year: 2004&#41; cisloDokladuTotoznosti: &#39;203122846&#39;.
+pasazer4 := Pasazer jmeno: &#39;Jan&#39; prijmeni: &#39;Pepek&#39; datumNarozeni: &#40;Date newDay: 7 monthNumber: 8 year: 1964&#41; cisloDokladuTotoznosti: &#39;201547888&#39;.
+pasazer5 := Pasazer jmeno: &#39;Kamil&#39; prijmeni: &#39;Bo&#382;kov&#39; datumNarozeni: &#40;Date newDay: 12 monthNumber: 3 year: 2010&#41; cisloDokladuTotoznosti: &#39;198564217&#39;.
+
+&quot;Piloti&quot;
+pilot1 := Pilot jmeno: &#39;Jan&#39; prijmeni: &#39;Novak&#39; cisloLicence: 19300 licenceOd: &#40;Date newDay: 31 monthNumber: 8 year: 2017&#41;.
+pilot2 := Pilot jmeno: &#39;Vladimir&#39; prijmeni: &#39;Koren&#39; cisloLicence: 40501 licenceOd: &#40;Date newDay: 4 monthNumber: 4 year: 2014&#41;.
+pilot3 := Pilot jmeno: &#39;Eva&#39; prijmeni: &#39;Preletava&#39; cisloLicence: 84517 licenceOd: &#40;Date newDay: 1 monthNumber: 11 year: 2015&#41;.
+pilot4 := Pilot jmeno: &#39;Adam&#39; prijmeni: &#39;Denada&#39; cisloLicence: 35467 licenceOd: &#40;Date newDay: 13 monthNumber: 12 year: 2017&#41;.
+pilot5 := Pilot jmeno: &#39;Marek&#39; prijmeni: &#39;Nesvatba&#39; cisloLicence: 75142 licenceOd: &#40;Date newDay: 1 monthNumber: 2 year: 2015&#41;.
+pilot6 := Pilot jmeno: &#39;Zdenek&#39; prijmeni: &#39;Svoboda&#39; cisloLicence: 35468 licenceOd: &#40;Date newDay: 3 monthNumber: 8 year: 2011&#41;.
+pilot7 := Pilot jmeno: &#39;Filip&#39; prijmeni: &#39;Jaro&#39; cisloLicence: 94183 licenceOd: &#40;Date newDay: 11 monthNumber: 12 year: 2018&#41;.
+pilot8 := Pilot jmeno: &#39;Karel&#39; prijmeni: &#39;Jan&#39; cisloLicence: 35777 licenceOd: &#40;Date newDay: 4 monthNumber: 5 year: 2005&#41;.
+pilot9 := Pilot jmeno: &#39;Pavla&#39; prijmeni: &#39;Novakova&#39; cisloLicence: 66512 licenceOd: &#40;Date newDay: 13 monthNumber: 12 year: 2019&#41;.
+pilot10 := Pilot jmeno: &#39;Adela&#39; prijmeni: &#39;Morousova&#39; cisloLicence: 35497 licenceOd: &#40;Date newDay: 23 monthNumber: 3 year: 2020&#41;.
+
+&quot;Letiste&quot;
+letistePRG := Letiste nazev: &#39;Letiste Vaclava Havla Praha&#39; kodIATA: &#35;PRG.
+letisteCDG := Letiste nazev: &#39;Charles de Gaulle Paris&#39; kodIATA: &#35;CDG.
+letisteLHR := Letiste nazev: &#39;London Heathrow&#39; kodIATA: &#35;LHR.
+letisteLAX := Letiste nazev: &#39;Los Angeles Airport&#39; kodIATA: &#35;LAX.
+letisteATL := Letiste nazev: &#39;Hartsfield-Jackson Atlanta&#39; kodIATA: &#35;ATL.
+letisteJFK := Letiste nazev: &#39;John F. Kennedy New York&#39; kodIATA: &#35;JFK.
+
+&quot;Novy let&quot;
+let1 := Let new.
+let1 vzletaZLetiste: letistePRG.
+let1 vzletaZRunway:  &#40;letistePRG kodIATA -&gt; letistePRG runway&#41;.
+let1 pristavaNaLetisti: letisteCDG.
+let1 pristavaNaRunway: &#40;letisteCDG kodIATA -&gt; letisteCDG runway&#41;.
+&quot;let1 inspect.&quot;
+
+&quot;Parametry letu&quot;
+seznamMest := let1 souradniceMest. 
+let1 zemepisnaSirkaMistaVzletu: &#40;&#40;seznamMest at: let1 vzletaZLetiste&#41; at:1&#41;.
+let1 zemepisnaDelkaMistaVzletu: &#40;&#40;seznamMest at: let1 vzletaZLetiste&#41; at:2&#41;.
+let1 zemepisnaSirkaMistaPristani: &#40;&#40;seznamMest at: let1 pristavaNaLetisti&#41; at:1&#41;.
+let1 zemepisnaDelkaMistaPristani: &#40;&#40;seznamMest at: let1 pristavaNaLetisti&#41;  at:2&#41;.
+let1 vzdalenostMeziStartemACilem. &quot;let vzdalenost:sirkaPRG delka: delkaPRG sirka: sirkaCDG delka: delkaCDG.&quot;
+
+&quot;Letadla&quot;
+letadlo1 := Letadlo new.
+letadlo1 let: let1.
+letadlo1 typ: &#35;&#39;Airbus A320&#39;.
+letadlo1 rokVyroby: 2006.
+letadlo1 vlastnik: &#39;Air France&#39;.
+letadlo1 obsazeno: 20.
+
+letadlo1 rozlozeniSedadel.
+
+&quot;Manazer&quot;
+letenka1 := Letenka cisloLetenky: &#39;CZ7866&#39; vstupenkaNa: letadlo1.
+pasazer1 kupuje: letenka1.
+
+letenka2 := Letenka cisloLetenky: &#39;CZ7867&#39; vstupenkaNa: letadlo1.
+pasazer2 kupuje: letenka2.
+
+letenka3 := Letenka cisloLetenky: &#39;CZ7868&#39; vstupenkaNa: letadlo1.
+pasazer3 kupuje: letenka3.
+
+letenka4 := Letenka cisloLetenky: &#39;CZ7869&#39; vstupenkaNa: letadlo1.
+pasazer4 kupuje: letenka4.
+
+letenka5 := Letenka cisloLetenky: &#39;CZ7870&#39; vstupenkaNa: letadlo1.
+pasazer5 kupuje: letenka5.
+
+
+&quot;--------------------------------------------------&quot;
+&quot;---PRIRAZOVANI SETU K OBJEKTUM---&quot;
+&quot;--------------------------------------------------&quot;
+pasazer1 nastupujeNa: letadlo1.
+
+Pasazeri add: pasazer1; add: pasazer2; add: pasazer3; add: pasazer4; add: pasazer5.
+
+Piloti add: pilot1; add: pilot2; add: pilot3; add: pilot4; add: pilot5; add: pilot6; add: pilot7; add: pilot8; add: pilot9; add: pilot10.
+
+letadlo1 priraditPosadku: Piloti.
+
+Letadla add: letadlo1.
+
+SeznamLetist add: letistePRG; add: letisteCDG; add: letisteLHR;
+                     add: letisteLAX; add: letisteATL; add: letisteJFK; yourself.
+
+Lety add: let1.
+
+
+
+</PRE>
+<HR>
+<H2>Diagram</H2>
+<IMG SRC="SemestralniProjekt.gif">
+<HR>
+<H2>Classes</H2>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Letiste
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+kodIATA :String
+</CODE>
+<BR>
+<CODE>
+nazev :String
+</CODE>
+<BR>
+<CODE>
+runwayDictionary :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+gate
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+kodIATA
+</CODE>
+<BR>
+<CODE>
+kodIATA:
+</CODE>
+<BR>
+<CODE>
+nazev
+</CODE>
+<BR>
+<CODE>
+nazev:
+</CODE>
+<BR>
+<CODE>
+runway
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+gate
+</CODE></B>
+<PRE>
+	&quot;Vypise prirazeny gate na letisti&quot;
+
+	| random temp |
+	random := Random new.
+	temp := random next &#42; 49 &#43; 1.
+	^temp asInteger</PRE>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     nazev := nil.
+     kodIATA := nil.
+     runwayDictionary := nil.</PRE>
+<LI>
+<B><CODE>
+runway
+</CODE></B>
+<PRE>
+	&quot;comment stating purpose of message&quot;
+
+	| random temp array |
+	random := Random new.
+	array := &#40;self class seznamRunwayNaLetistich&#41; at: self kodIATA.
+	temp := &#40;random next &#42; array size &#43; 1&#41; asInteger.
+	^array at: temp</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Osoba
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+datumNarozeni :Date
+</CODE>
+<BR>
+<CODE>
+jmeno :String
+</CODE>
+<BR>
+<CODE>
+prijmeni :String
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+datumNarozeni
+</CODE>
+<BR>
+<CODE>
+datumNarozeni:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+jmeno
+</CODE>
+<BR>
+<CODE>
+jmeno:
+</CODE>
+<BR>
+<CODE>
+prijmeni
+</CODE>
+<BR>
+<CODE>
+prijmeni:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     jmeno := nil.
+     prijmeni := nil.
+     datumNarozeni := nil.</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Letenka
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+cisloLetenky :String
+</CODE>
+<BR>
+<CODE>
+cisloSedadla :String
+</CODE>
+<BR>
+<CODE>
+pasazer :Object
+</CODE>
+<BR>
+<CODE>
+vstupenkaNa :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+cisloLetenky
+</CODE>
+<BR>
+<CODE>
+cisloLetenky:
+</CODE>
+<BR>
+<CODE>
+cisloSedadla
+</CODE>
+<BR>
+<CODE>
+cisloSedadla:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+koupitPro:
+</CODE>
+<BR>
+<CODE>
+pasazer
+</CODE>
+<BR>
+<CODE>
+pasazer:
+</CODE>
+<BR>
+<CODE>
+vstupenkaNa
+</CODE>
+<BR>
+<CODE>
+vstupenkaNa:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+cisloSedadla
+</CODE></B>
+<PRE>
+	&quot;generated by Daskalos&quot;
+
+	^cisloSedadla</PRE>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     cisloLetenky := nil.
+     cisloSedadla := nil.
+     vstupenkaNa := nil.
+     pasazer := nil.</PRE>
+<LI>
+<B><CODE>
+koupitPro: pasazera
+</CODE></B>
+<PRE>
+	&quot;generated by Daskalos&quot;
+
+	| letadlo |
+	self pasazer: pasazera.
+	letadlo := self vstupenkaNa.
+	self cisloSedadla: letadlo priraditSedadlo.
+	^self	&quot;vracim zakoupenou letenku&quot;</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Letadlo
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+let :Object
+</CODE>
+<BR>
+<CODE>
+naposledyPouzitaCastLetadla :Object
+</CODE>
+<BR>
+<CODE>
+obsazeno :Number
+</CODE>
+<BR>
+<CODE>
+posadka :Object
+</CODE>
+<BR>
+<CODE>
+rokVyroby :Object
+</CODE>
+<BR>
+<CODE>
+typ :Object
+</CODE>
+<BR>
+<CODE>
+vlastnik :String
+</CODE>
+<BR>
+<CODE>
+volnaSedadla :Object
+</CODE>
+<BR>
+<CODE>
+vsechnyTypyLetadel :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+convertIntToString:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+let
+</CODE>
+<BR>
+<CODE>
+let:
+</CODE>
+<BR>
+<CODE>
+nahodnyPilot
+</CODE>
+<BR>
+<CODE>
+naletanoHodin
+</CODE>
+<BR>
+<CODE>
+naplnenoZProcent
+</CODE>
+<BR>
+<CODE>
+naposledyPouzitaCastLetadla
+</CODE>
+<BR>
+<CODE>
+naposledyPouzitaCastLetadla:
+</CODE>
+<BR>
+<CODE>
+obsazeno
+</CODE>
+<BR>
+<CODE>
+obsazeno:
+</CODE>
+<BR>
+<CODE>
+posadka
+</CODE>
+<BR>
+<CODE>
+posadka:
+</CODE>
+<BR>
+<CODE>
+priraditPosadku:
+</CODE>
+<BR>
+<CODE>
+priraditSedadlo
+</CODE>
+<BR>
+<CODE>
+pristiServis
+</CODE>
+<BR>
+<CODE>
+rokVyroby
+</CODE>
+<BR>
+<CODE>
+rokVyroby:
+</CODE>
+<BR>
+<CODE>
+rozlozeniSedadel
+</CODE>
+<BR>
+<CODE>
+typ
+</CODE>
+<BR>
+<CODE>
+typ:
+</CODE>
+<BR>
+<CODE>
+vlastnik
+</CODE>
+<BR>
+<CODE>
+vlastnik:
+</CODE>
+<BR>
+<CODE>
+volnaSedadla
+</CODE>
+<BR>
+<CODE>
+volnaSedadla:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+convertIntToString: anInteger 
+</CODE></B>
+<PRE>
+	&quot;konvertuje jeden char na string delky jedna&quot;
+
+	| string |
+	string := anInteger printString.
+	^string</PRE>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     rokVyroby := nil.
+     vlastnik := nil.
+     typ := nil.
+     obsazeno := nil.
+     volnaSedadla := nil.
+     naposledyPouzitaCastLetadla := nil.
+     vsechnyTypyLetadel := nil.
+     posadka := nil.
+     let := nil.</PRE>
+<LI>
+<B><CODE>
+nahodnyPilot
+</CODE></B>
+<PRE>
+	&quot;Levny randomizer&#44; protoze funkce &#35;atRandom nefunguje&quot;
+
+	| randomizer |
+	randomizer := Timestamp now.
+	randomizer := randomizer copy second \\ 5.
+	randomizer := randomizer copy &#43; 1.
+
+	^ randomizer</PRE>
+<LI>
+<B><CODE>
+naletanoHodin
+</CODE></B>
+<PRE>
+	&quot;Prumerny pocet naletanych hodin&quot;
+
+	| roky dny veVzduchuHodin |
+	roky := Date today year - rokVyroby.
+	dny := roky &#42; 365.
+	veVzduchuHodin := dny &#42; 7.
+	^veVzduchuHodin</PRE>
+<LI>
+<B><CODE>
+naplnenoZProcent
+</CODE></B>
+<PRE>
+	| kapacita obsazenostProcenta |
+	kapacita := self class vsechnyTypyLetadel at: self typ.
+	obsazenostProcenta := kapacita / 100 &#42; self obsazeno.
+	^obsazenostProcenta</PRE>
+<LI>
+<B><CODE>
+priraditPosadku: kolekcePilotu 
+</CODE></B>
+<PRE>
+	&quot;Letadlo je pilotovano kapitanem a kopilotem&quot;
+
+	| kapitani kopiloti zvolenyKapitan zvolenyKopilot |
+	kapitani := kolekcePilotu select: [:pilot | pilot hodnost = &#39;kapitan&#39;].
+	kopiloti := kolekcePilotu reject: [:pilot | pilot hodnost = &#39;kapitan&#39;].
+	zvolenyKapitan := kapitani at: self nahodnyPilot.
+	zvolenyKopilot := kopiloti at: self nahodnyPilot.
+	self posadka: Dictionary new.
+	self posadka at: &#35;Kapitan
+		put: zvolenyKapitan jmeno &#44; &#39; &#39; &#44; zvolenyKapitan prijmeni.
+	self posadka at: &#35;Kopilot
+		put: zvolenyKopilot jmeno &#44; &#39; &#39; &#44; zvolenyKopilot prijmeni</PRE>
+<LI>
+<B><CODE>
+priraditSedadlo
+</CODE></B>
+<PRE>
+	&quot;priradit sadadlo Letence a pres to Pasazerovi&quot;
+
+	&quot;pouzit prvni cast letadla nebo posledni plnena cast je zadni cast letadla&quot;
+
+	| radaASedadla prirazeneSedadlo pouzitCastLetadla |
+	&#40;self naposledyPouzitaCastLetadla isNil or: 
+			[&#40;self class castLetadla indexOf: self naposledyPouzitaCastLetadla&#41; 
+				= self class castLetadla size]&#41; 
+		ifTrue: [pouzitCastLetadla := self class castLetadla at: 1]
+		ifFalse: 
+			[pouzitCastLetadla := self class castLetadla 
+						at: &#40;self class castLetadla indexOf: self naposledyPouzitaCastLetadla&#41; &#43; 1].	&quot;pouzit dalsi cast letadla&quot;
+	radaASedadla := &#40;volnaSedadla at: pouzitCastLetadla&#41; associations first.
+	&quot;zjisit volne sedadlo&quot;
+	prirazeneSedadlo := &#40;self convertIntToString: radaASedadla key&#41; 
+				&#44; radaASedadla value first.
+	&quot;smazat prirazene sedadlo z volnych sedadel&quot;
+	&#40;volnaSedadla at: pouzitCastLetadla&#41; associations first value 
+		remove: radaASedadla value first.
+	&quot;aktualizovat naposledy pouzitou cast letadla&quot;
+	self naposledyPouzitaCastLetadla: pouzitCastLetadla.
+	&quot;vraceni prirazeneho sedadla&quot;
+	^prirazeneSedadlo</PRE>
+<LI>
+<B><CODE>
+pristiServis
+</CODE></B>
+<PRE>
+	&quot;Manualni zadavani posledni kontroly letadla&#44; automaticke pocitani data pristiho servisu&quot;
+
+	| posledni udrzba dnes |
+	posledni := Date 
+				newDay: 4
+				monthNumber: 12
+				year: 2019.
+	udrzba := posledni addDays: 1825.	&quot;Osekany Smalltalk&#44; nejde addMonths ani addYears&quot;
+	dnes := Date today.
+	dnes &gt; udrzba ifTrue: [^&#39;SERVIS NUTNY&#33;&#39;] ifFalse: [^udrzba]</PRE>
+<LI>
+<B><CODE>
+rozlozeniSedadel
+</CODE></B>
+<PRE>
+	&quot;matice na rozlozeni sedadel v letadle&#44; vzor pro automaticke prideleni podle jinych funkci&quot;
+
+	| kapacitaLetadla predek radySekcePredek radySekceStred konecSekceStred radySekceZadek radaSedadel |
+	kapacitaLetadla := self class vsechnyTypyLetadel at: self typ.
+	self volnaSedadla: Dictionary new.
+	predek := &#40;kapacitaLetadla / 3&#41; floor.	&quot;deleno 3 protoze mame tri oblasti predek&#44; stred a zadek letadla&quot;
+	radySekcePredek := Dictionary new.
+	radySekceStred := Dictionary new.
+	radySekceZadek := Dictionary new.
+	konecSekceStred := predek &#43; predek.
+	radaSedadel := OrderedCollection new.
+	radaSedadel
+		add: &#39;A&#39;;
+		add: &#39;B&#39;;
+		add: &#39;C&#39;;
+		add: &#39;D&#39;;
+		add: &#39;E&#39;;
+		add: &#39;F&#39;;
+		yourself.
+	&quot;rozlozeni predku letadla&quot;
+	1 to: predek do: [:rada | radySekcePredek at: rada put: radaSedadel copy].	&quot;musi se pouzit copy aby kazda rada mela sva sedadla&quot;
+	self volnaSedadla at: &#40;self class castLetadla at: 1&#41; put: radySekcePredek.	&quot;&#35;radySekcePredek&quot;
+	&quot;stred je stejne velky jako predek ale ma jine rady&quot;
+	predek &#43; 1 to: konecSekceStred
+		do: [:rada | radySekceStred at: rada put: radaSedadel copy].
+	self volnaSedadla at: &#40;self class castLetadla at: 2&#41; put: radySekceStred.	&quot;&#35;radySekceStred&quot;
+	&quot;zad letadla je jinak velika nez ostatni sekce&quot;
+	konecSekceStred &#43; 1 to: kapacitaLetadla
+		do: [:rada | radySekceZadek at: rada put: radaSedadel copy].
+	self volnaSedadla at: &#40;self class castLetadla at: 3&#41; put: radySekceZadek	&quot;&#35;radySekceZadek&quot;</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Let
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+kodIATA :Object
+</CODE>
+<BR>
+<CODE>
+pristavaNaLetisti :Object
+</CODE>
+<BR>
+<CODE>
+pristavaNaRunway :Object
+</CODE>
+<BR>
+<CODE>
+vzletaZLetiste :Object
+</CODE>
+<BR>
+<CODE>
+vzletaZRunway :Object
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaPristani :Object
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaVzletu :Object
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaPristani :Object
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaVzletu :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+pristavaNaLetisti
+</CODE>
+<BR>
+<CODE>
+pristavaNaLetisti:
+</CODE>
+<BR>
+<CODE>
+pristavaNaRunway
+</CODE>
+<BR>
+<CODE>
+pristavaNaRunway:
+</CODE>
+<BR>
+<CODE>
+souradniceMest
+</CODE>
+<BR>
+<CODE>
+vzdalenost:delka:sirka:delka:
+</CODE>
+<BR>
+<CODE>
+vzdalenostMeziStartemACilem
+</CODE>
+<BR>
+<CODE>
+vzletaZLetiste
+</CODE>
+<BR>
+<CODE>
+vzletaZLetiste:
+</CODE>
+<BR>
+<CODE>
+vzletaZRunway
+</CODE>
+<BR>
+<CODE>
+vzletaZRunway:
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaPristani
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaPristani:
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaVzletu
+</CODE>
+<BR>
+<CODE>
+zemepisnaDelkaMistaVzletu:
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaPristani
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaPristani:
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaVzletu
+</CODE>
+<BR>
+<CODE>
+zemepisnaSirkaMistaVzletu:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     kodIATA := nil.
+     pristavaNaLetisti := nil.
+     vzletaZLetiste := nil.
+     vzletaZRunway := nil.
+     pristavaNaRunway := nil.
+     zemepisnaDelkaMistaPristani := nil.
+     zemepisnaSirkaMistaPristani := nil.
+     zemepisnaDelkaMistaVzletu := nil.
+     zemepisnaSirkaMistaVzletu := nil.</PRE>
+<LI>
+<B><CODE>
+souradniceMest
+</CODE></B>
+<PRE>
+	&quot;comment stating purpose of message&quot;
+
+	| seznam |
+	seznam := Dictionary new.
+	seznam at: &#35;PRG
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 50.100856;
+				at: 2 put: 14.260115;
+				yourself&#41;.
+	seznam at: &#35;CDG
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 49.009724;
+				at: 2 put: 2.547778;
+				yourself&#41;.
+	seznam at: &#35;JFK
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 40.6441666;
+				at: 2 put: -73.782222;
+				yourself&#41;.
+	seznam at: &#35;ATL
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 32.7790;
+				at: 2 put: -96.8087;
+				yourself&#41;.
+	seznam at: &#35;LHR
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 51.470020;
+				at: 2 put: -0.454295;
+				yourself&#41;.
+	seznam at: &#35;LAX
+		put: &#40;&#40;Array new: 2&#41;
+				at: 1 put: 33.942791;
+				at: 2 put: -118.410042;
+				yourself&#41;.
+
+	^ seznam</PRE>
+<LI>
+<B><CODE>
+vzdalenost: sirka1 delka: delka1 sirka: sirka2 delka: delka2 
+</CODE></B>
+<PRE>
+	&quot;K vypoctu je pouzita Haversine vzorec pro vypocet vzdalenosti na kouli na zaklade sirky a delky 2 bodu&quot;
+
+	| vzdalenostSirka vzdalenostDelka delka1Radiany delka2Radiany meziVypocet vzorec polomerZeme |
+	polomerZeme := 6378.	&quot; v km&quot;
+	&quot;Vzdalenost mezi sirkama a delkama&quot;
+	vzdalenostSirka := &#40;sirka2 - sirka1&#41; &#42; Float pi / 180.0.	&quot;sirka1 je start a sirka2 je cil&quot;
+	vzdalenostDelka := &#40;delka2 - delka1&#41; &#42; Float pi / 180.0.	&quot;delka1 je start a delka2 je cil&quot;
+
+	&quot;prevod delky do radianu&quot;
+	delka1Radiany := sirka1 &#42; Float pi / 180.0.
+	delka2Radiany := sirka2 &#42; Float pi / 180.0.
+
+	&quot;Haversine vzorec&quot;
+	meziVypocet := &#40;&#40;&#40;vzdalenostSirka / 2&#41; sin raisedTo: 2&#41; 
+				&#43; &#40;vzdalenostDelka / 2&#41; sin raisedTo: 2&#41; 
+				&#42; &#40;delka1Radiany cos &#42; delka2Radiany cos&#41;.
+	vzorec := 2 &#42; meziVypocet sqrt arcSin.
+
+	&quot;vracim cely vysledek&quot;
+	^vzorec &#42; polomerZeme</PRE>
+<LI>
+<B><CODE>
+vzdalenostMeziStartemACilem
+</CODE></B>
+<PRE>
+	&quot;spocita vzdalenost mezi 2 mesty&quot;
+
+	^ self vzdalenost: zemepisnaSirkaMistaVzletu delka: zemepisnaDelkaMistaVzletu sirka: zemepisnaSirkaMistaPristani delka: zemepisnaDelkaMistaPristani</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Pilot
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+cisloLicence :Number
+</CODE>
+<BR>
+<CODE>
+hodnost :Object
+</CODE>
+<BR>
+<CODE>
+licenceOd :Date
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+cisloLicence
+</CODE>
+<BR>
+<CODE>
+cisloLicence:
+</CODE>
+<BR>
+<CODE>
+hodnost
+</CODE>
+<BR>
+<CODE>
+hodnost:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+licenceDo
+</CODE>
+<BR>
+<CODE>
+licenceOd
+</CODE>
+<BR>
+<CODE>
+licenceOd:
+</CODE>
+<BR>
+<CODE>
+urceniHodnosti
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     cisloLicence := nil.
+     licenceOd := nil.
+     hodnost := nil.</PRE>
+<LI>
+<B><CODE>
+licenceDo
+</CODE></B>
+<PRE>
+	&quot;comment stating purpose of message&quot;
+
+	| posledni pristi dnes |
+	posledni := licenceOd.
+	pristi := posledni addDays: 1825.
+	dnes := Date today.
+	dnes &lt; pristi ifTrue: [^pristi] ifFalse: [^&#39;Propadla licence&#33;&#39;]</PRE>
+<LI>
+<B><CODE>
+urceniHodnosti
+</CODE></B>
+<PRE>
+	&quot;Na zaklade cisla licence urceni pozice v letadle&quot;
+
+	self cisloLicence &lt; 40000 
+		ifTrue: [self hodnost: &#39;kopilot&#39;]
+		ifFalse: [self hodnost: &#39;kapitan&#39;]</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Pasazer
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+cisloDokladuTotoznosti :String
+</CODE>
+<BR>
+<CODE>
+nastupujeNa :Object
+</CODE>
+<BR>
+<CODE>
+zakoupenaLetenka :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+cisloDokladuTotoznosti
+</CODE>
+<BR>
+<CODE>
+cisloDokladuTotoznosti:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+kupuje:
+</CODE>
+<BR>
+<CODE>
+nastupujeNa
+</CODE>
+<BR>
+<CODE>
+nastupujeNa:
+</CODE>
+<BR>
+<CODE>
+vek
+</CODE>
+<BR>
+<CODE>
+zakoupenaLetenka
+</CODE>
+<BR>
+<CODE>
+zakoupenaLetenka:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     cisloDokladuTotoznosti := nil.
+     zakoupenaLetenka := nil.
+     nastupujeNa := nil.</PRE>
+<LI>
+<B><CODE>
+kupuje: letenku 
+</CODE></B>
+<PRE>
+	&quot;generated by Daskalos&quot;
+
+	self zakoupenaLetenka: &#40;letenku koupitPro: self&#41;
+
+	&quot;kupuje := &#40;self checkValue: letenka forVariable: &#35;kupuje&#41;&quot;</PRE>
+<LI>
+<B><CODE>
+vek
+</CODE></B>
+<PRE>
+	&quot;Vrati aktualni vek pasazera&quot;
+
+	| vek |
+	vek := Date today year - datumNarozeni year.
+	^vek</PRE>
+<LI>
+<B><CODE>
+zakoupenaLetenka
+</CODE></B>
+<PRE>
+	&quot;generated by Daskalos&quot;
+
+	^zakoupenaLetenka</PRE>
+</UL>
+<HR>
+<H2>Links</H2>
+<A HREF="SemestralniProjekt.xml">Data file</A> and 
+<A HREF="SemestralniProjekt.st">class source</A>.
+
+<BR>
+
+<BR>
+<CODE>
+Generated by Daskalos - Object Modeling Tutor &#40;C&#41; 2006 V. Merunka
+</CODE>
+
+<BR>
+<CODE>
+April 25&#44; 2020
+</CODE>
+</BODY></HTML>
